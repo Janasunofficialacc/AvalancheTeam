@@ -1,0 +1,14 @@
+using UnityEngine;
+using UnityEngine.SceneManagement; // Crucial for switching screens
+
+public class MapHubManager : MonoBehaviour
+{
+    // This function runs automatically whenever your button is clicked
+    public void SimulateEnteringSustainability()
+    {
+        Debug.Log("🛰️ GPS Update: Location matched with Sustainability Pavilion!");
+        
+        // This launches the zone scene
+        SceneManager.LoadScene("Scene_Zone_Sustainability");
+    }
+}

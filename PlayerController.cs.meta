@@ -1,0 +1,69 @@
+using UnityEngine;
+using UnityEngine.InputSystem; 
+
+public class PlayerController : MonoBehaviour
+{
+    public float moveSpeed = 5.0f;
+
+    [Header("Camera Setup")]
+    [SerializeField] private Transform playerCamera; 
+
+    [Header("Boundary Settings")]
+    public float maxRadius = 64.0f;
+    private Vector3 centerPoint; // Made private so it sets itself on start
+
+    void Start()
+    {
+        // Automatically set the center boundary to wherever you positioned the player in the editor
+        centerPoint = new Vector3(transform.position.x, transform.position.y, transform.position.z);
+    }
+
+    void Update()
+    {
+        if (Keyboard.current == null)
+        {
+            InputSystem.Update(); 
+        }
+
+        float moveX = 0.0f;
+        float moveZ = 0.0f;
+
+        var keyboard = Keyboard.current;
+        if (keyboard != null)
+        {
+            if (keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed) moveZ = 1.0f;
+            if (keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed) moveZ = -1.0f;
+            if (keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed) moveX = -1.0f;
+            if (keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed) moveX = 1.0f;
+        }
+
+        Vector3 rawMoveDirection = new Vector3(moveX, 0.0f, moveZ).normalized;
+        
+        Vector3 cameraForward = Vector3.forward;
+        Vector3 cameraRight = Vector3.right;
+        
+        if (playerCamera != null)
+        {
+            cameraForward = playerCamera.forward;
+            cameraRight = playerCamera.right;
+            cameraForward.y = 0f;
+            cameraRight.y = 0f;
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+        }
+        
+        Vector3 finalMoveDirection = (cameraForward * rawMoveDirection.z) + (cameraRight * rawMoveDirection.x);
+
+        transform.Translate(finalMoveDirection * moveSpeed * Time.deltaTime, Space.World);
+
+        // Position clamping
+        Vector3 horizontalPos = new Vector3(transform.position.x, centerPoint.y, transform.position.z);
+        float distance = Vector3.Distance(horizontalPos, centerPoint);
+        if (distance > maxRadius)
+        {
+            Vector3 directionFromCenter = (horizontalPos - centerPoint).normalized;
+            Vector3 clampedPos = centerPoint + directionFromCenter * maxRadius;
+            transform.position = new Vector3(clampedPos.x, transform.position.y, clampedPos.z);
+        }
+    }
+}

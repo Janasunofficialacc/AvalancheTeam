@@ -1,0 +1,25 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
+
+public class MinigameExit : MonoBehaviour
+{
+    [Header("Return Configuration")]
+    [SerializeField] private string mainCircusSceneName = "Scene_Layout";
+
+    void Update()
+    {
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            // 1. Reset time scale in case the minigame paused the engine
+            Time.timeScale = 1f;
+
+            // 2. Relock the cursor so your Player Controller can take over looking around
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            // 3. Load the main circus world
+            SceneManager.LoadScene(mainCircusSceneName);
+        }
+    }
+}

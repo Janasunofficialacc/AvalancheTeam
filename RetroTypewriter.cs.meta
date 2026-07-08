@@ -1,0 +1,59 @@
+using System.Collections;
+using UnityEngine;
+using TMPro;
+
+public class RetroTypewriter : MonoBehaviour
+{
+    [Header("UI Components")]
+    [SerializeField] private TextMeshProUGUI textComponent;
+    [SerializeField] private RectTransform characterPortrait; // Holds the 2D portrait canvas layout
+    
+    [Header("Settings")]
+    [SerializeField] private float timePerCharacter = 0.03f;
+    [SerializeField] private float animationSpeed = 5f; // Speed of the slide-in effect
+    
+    [TextArea(3, 10)]
+    [SerializeField] private string fullMessage;
+
+    private Vector2 targetPortraitPosition;
+    private Vector2 hiddenPortraitPosition;
+
+    private void Start()
+    {
+        if (characterPortrait != null)
+        {
+            // Record where you placed the portrait in the editor as its final destination
+            targetPortraitPosition = characterPortrait.anchoredPosition;
+            
+            // Set up a hidden starting point just off the left edge of the screen
+            hiddenPortraitPosition = new Vector2(targetPortraitPosition.x - 300f, targetPortraitPosition.y);
+            characterPortrait.anchoredPosition = hiddenPortraitPosition;
+        }
+
+        StartCoroutine(TypeTextSequence());
+    }
+
+    private void Update()
+    {
+        // Smoothly slide the portrait from its hidden spot to its target spot over time
+        if (characterPortrait != null)
+        {
+            characterPortrait.anchoredPosition = Vector2.Lerp(
+                characterPortrait.anchoredPosition, 
+                targetPortraitPosition, 
+                Time.deltaTime * animationSpeed
+            );
+        }
+    }
+
+    private IEnumerator TypeTextSequence()
+    {
+        textComponent.text = "";
+
+        foreach (char letter in fullMessage.ToCharArray())
+        {
+            textComponent.text += letter;
+            yield return new WaitForSeconds(timePerCharacter);
+        }
+    }
+}

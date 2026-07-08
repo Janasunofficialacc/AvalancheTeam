@@ -1,0 +1,41 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+public class FirstPersonLook : MonoBehaviour
+{
+    [Header("Look Settings")]
+    public float mouseSensitivity = 15.0f;
+
+    [Header("References")]
+    public Transform playerBody;
+
+    private float xRotation = 0f;
+
+    void Start()
+    {
+        // Lock and hide the cursor during gameplay
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    void Update()
+    {
+        if (Mouse.current == null || playerBody == null) return;
+
+        // Read modern delta mouse input from the New Input System
+        Vector2 mouseDelta = Mouse.current.delta.ReadValue() * (mouseSensitivity * 0.05f);
+
+        float mouseX = mouseDelta.x;
+        float mouseY = mouseDelta.y;
+
+        // Calculate and clamp look up/down limits
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -85f, 85f);
+
+        // Rotate the camera vertically (pitch)
+        transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+
+        // Rotate the entire player capsule horizontally (yaw)
+        playerBody.Rotate(Vector3.up * mouseX);
+    }
+}

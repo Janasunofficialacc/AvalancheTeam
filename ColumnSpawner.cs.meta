@@ -1,0 +1,30 @@
+using UnityEngine;
+
+public class ColumnSpawner : MonoBehaviour
+{
+    public GameObject notePrefab;
+    public UnityEngine.InputSystem.Key rhythmKey; // Pick the unique key in the Inspector!
+
+    private Vector3 targetPosition;
+
+    void Start()
+    {
+        // The target is directly below this spawner's exact X coordinate
+        targetPosition = new Vector3(transform.position.x, -3.5f, 0f);
+    }
+
+    void Update()
+    {
+        // Dynamically checks whichever key you selected for this specific column
+        if (UnityEngine.InputSystem.Keyboard.current[rhythmKey].wasPressedThisFrame)
+        {
+            GameObject newNote = Instantiate(notePrefab, transform.position, Quaternion.identity);
+            
+            MovingNote noteScript = newNote.GetComponent<MovingNote>();
+            if (noteScript != null)
+            {
+                noteScript.Setup(targetPosition);
+            }
+        }
+    }
+}

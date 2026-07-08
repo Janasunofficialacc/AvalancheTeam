@@ -1,0 +1,39 @@
+using UnityEngine;
+using UnityEngine.InputSystem; // Necessary for reading mouse inputs in Unity 6
+
+public class CamMove : MonoBehaviour
+{
+    public Transform target;
+    public Vector3 offset = new Vector3(0f, 2f, -5f); // Updated to your preferred Y position
+    public float smoothSpeed = 5.0f;
+    public float rotationSpeed = 100.0f;
+
+    private float currentXRotation = 0.0f;
+
+    void LateUpdate()
+    {
+        if (target == null) return;
+
+        // 1. Check if the player is holding down the Right Mouse Button
+        if (Mouse.current != null && Mouse.current.rightButton.isPressed)
+        {
+            // Read how fast the mouse is moving horizontally (Left/Right)
+            float mouseX = Mouse.current.delta.x.ReadValue();
+            
+            // Adjust our rotation tracking variable based on mouse movement speed
+            currentXRotation += mouseX * rotationSpeed * Time.deltaTime;
+        }
+
+        // 2. Calculate our rotation angle around the player
+        Quaternion rotation = Quaternion.Euler(0f, currentXRotation, 0f);
+
+        // 3. Find the final desired position using the calculated rotation matrix
+        Vector3 desiredPosition = target.position + (rotation * offset);
+        Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed * Time.deltaTime);
+        
+        transform.position = smoothedPosition;
+
+        // 4. Force the camera to always look directly at your player capsule
+        transform.LookAt(target.position + Vector3.up * 1f); 
+    }
+}

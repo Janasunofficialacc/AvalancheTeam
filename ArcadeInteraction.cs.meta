@@ -1,0 +1,50 @@
+using UnityEngine;
+using UnityEngine.SceneManagement;
+// Add this line at the top to let the script talk to the new Input System
+using UnityEngine.InputSystem; 
+
+public class ArcadeInteraction : MonoBehaviour
+{
+    [Header("Scene Configuration")]
+    [SerializeField] private string Scene_GH; 
+    [SerializeField] private string mainCircusSceneName = "Scene_Layout";
+    
+    [Header("UI Feedback (Optional)")]
+    [SerializeField] private GameObject interactPromptUI; 
+
+    private bool isPlayerClose = false;
+
+    void Update()
+    {
+        // This is the new Input System way to check if the E key was pressed this frame
+        if (isPlayerClose && Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        {
+            if (interactPromptUI != null) interactPromptUI.SetActive(false);
+            
+            SceneManager.LoadScene(Scene_GH);
+        }
+        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            // This will take them back to the main circus layout scene from anywhere inside the minigame
+            SceneManager.LoadScene(mainCircusSceneName);
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerClose = true;
+            if (interactPromptUI != null) interactPromptUI.SetActive(true);
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerClose = false;
+            if (interactPromptUI != null) interactPromptUI.SetActive(false);
+        }
+    }
+}

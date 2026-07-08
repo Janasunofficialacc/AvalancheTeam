@@ -1,0 +1,14 @@
+using UnityEngine;
+
+public class NeoTest : MonoBehaviour
+{
+    void Start()
+    {
+        Debug.Log("NeoCity 3D Retro Coding has officially begun!");
+    }
+
+    void Update()
+    {
+        
+    }
+}

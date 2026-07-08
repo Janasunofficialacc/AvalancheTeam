@@ -1,0 +1,121 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+using System.Collections;
+
+public class ClawMachineController : MonoBehaviour
+{
+    [Header("Claw Parts")]
+    public Transform clawTransform; 
+    
+    [Header("Movement Settings")]
+    public float moveSpeed = 2f;
+    public float dropDepth = 3f;
+
+    [Header("Horizontal Boundaries")]
+    public float minX = -0.8f; 
+    public float maxX = 0.8f;
+
+    [Header("Prize Configuration")]
+    public Transform prizeTarget; // Drag your placeholder prize mesh here!
+    private bool prizeGrabbed = false;
+
+    private Vector3 originalPosition;
+    private bool isDropping = false;
+    private bool isPlayerAtMachine = false;
+    private MonoBehaviour cachedPlayerMovement; // Safely holds your player script reference
+
+    void Start()
+    {
+        if (clawTransform != null)
+        {
+            originalPosition = clawTransform.localPosition;
+        }
+    }
+
+    void Update()
+    {
+        if (!isPlayerAtMachine || isDropping || clawTransform == null) return;
+
+        // 1. Read Left/Right Arrow Inputs
+        float horizontalInput = 0f;
+        if (Keyboard.current.leftArrowKey.isPressed) horizontalInput = -1f;
+        if (Keyboard.current.rightArrowKey.isPressed) horizontalInput = 1f;
+
+        if (horizontalInput != 0f)
+        {
+            Vector3 nextPosition = clawTransform.localPosition + (Vector3.left * -horizontalInput * moveSpeed * Time.deltaTime);
+            nextPosition.x = Mathf.Clamp(nextPosition.x, minX, maxX);
+            clawTransform.localPosition = nextPosition;
+        }
+
+        // 2. Press Spacebar to drop the crane and lock input handles
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            StartCoroutine(DropAndRetractRoutine());
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player") && !isDropping)
+        {
+            isPlayerAtMachine = true;
+
+            // Freeze the player's movement script
+            cachedPlayerMovement = other.GetComponent<MonoBehaviour>(); 
+            if (cachedPlayerMovement != null) cachedPlayerMovement.enabled = false;
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            isPlayerAtMachine = false;
+        }
+    }
+
+    IEnumerator DropAndRetractRoutine()
+    {
+        isDropping = true;
+
+        Vector3 targetDepth = new Vector3(clawTransform.localPosition.x, originalPosition.y - dropDepth, clawTransform.localPosition.z);
+        
+        // 1. Move Claw Downwards
+        while (Mathf.Abs(clawTransform.localPosition.y - targetDepth.y) > 0.05f)
+        {
+            clawTransform.localPosition = Vector3.MoveTowards(clawTransform.localPosition, targetDepth, moveSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        // 2. --- PRIZE GRAB PLACEHOLDER ---
+        // If you assigned a prize and it hasn't been won yet, attach it directly to the claw!
+        if (prizeTarget != null && !prizeGrabbed)
+        {
+            prizeTarget.SetParent(clawTransform);
+            prizeTarget.localPosition = new Vector3(0, -0.5f, 0); // Centers it right under the claw fingers
+            prizeGrabbed = true;
+        }
+        
+        yield return new WaitForSeconds(0.5f); // Pause at bottom for tension
+
+        // 3. Move Back Up to original height
+        Vector3 returnPos = new Vector3(clawTransform.localPosition.x, originalPosition.y, clawTransform.localPosition.z);
+        while (Mathf.Abs(clawTransform.localPosition.y - originalPosition.y) > 0.05f)
+        {
+            clawTransform.localPosition = Vector3.MoveTowards(clawTransform.localPosition, returnPos, moveSpeed * Time.deltaTime);
+            yield return null;
+        }
+
+        // 4. RESET CONTROL MECHANICS
+        isDropping = false;
+        isPlayerAtMachine = false; // Release the machine focus
+
+        // Automatically unfreeze the player character so they can walk away instantly!
+        if (cachedPlayerMovement != null)
+        {
+            cachedPlayerMovement.enabled = true;
+            cachedPlayerMovement = null;
+        }
+    }
+}

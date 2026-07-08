@@ -1,0 +1,28 @@
+using UnityEngine;
+
+public class Trigger : MonoBehaviour
+{
+    // The name of this specific Expo area (e.g., "Sustainability", "Mobility")
+    public string zoneName = "Sustainability";
+
+    // This runs automatically when another 3D object enters this trigger zone
+    private void OnTriggerEnter(Collider other)
+    {
+        // Check if the object that walked into the zone is actually our Player Character
+        if (other.gameObject.name == "Capsule")
+        {
+            Debug.Log($"🚨 NOTIFICATION: Entered the {zoneName} Zone! Nearby mission detected. Prepare to scan!");
+            
+            // TODO: This is where we will make your UI Pop-up appear on screen next!
+        }
+    }
+
+    // This runs automatically when the player walks away and leaves the zone
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.gameObject.name == "Capsule")
+        {
+            Debug.Log($"Left the {zoneName} Zone.");
+        }
+    }
+}

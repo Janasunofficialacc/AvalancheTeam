@@ -1,0 +1,50 @@
+using UnityEngine;
+
+public class MovingNote : MonoBehaviour
+{
+    private Vector3 targetPosition;
+    private float moveSpeed = 5f; 
+    private bool isInitialized = false;
+
+    public void Setup(Vector3 perfectHitPosition)
+    {
+        targetPosition = perfectHitPosition;
+        isInitialized = true;
+    }
+
+    private void Update()
+    {
+        // 1. MOVEMENT MECHANICS
+        if (!isInitialized)
+        {
+            // Fall downwards automatically if not initialized
+            transform.Translate(Vector3.down * moveSpeed * Time.deltaTime);
+        }
+        else
+        {
+            // Move cleanly towards the bottom target position
+            transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+            
+            if (transform.position == targetPosition)
+            {
+                Debug.Log("❌ MISS!");
+                Destroy(gameObject);
+                return;
+            }
+        }
+
+        // 2. INPUT DETECTION (VERTICAL)
+        if (UnityEngine.InputSystem.Keyboard.current != null && 
+            UnityEngine.InputSystem.Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            // 🌟 CHANGED TO Y-AXIS: Calculate how close the note is vertically to the target line
+            float distanceToTarget = Mathf.Abs(transform.position.y - targetPosition.y);
+
+            if (distanceToTarget < 0.75f) 
+            {
+                Debug.Log("🎯 PERFECT HIT!");
+                Destroy(gameObject); 
+            }
+        }
+    }
+}

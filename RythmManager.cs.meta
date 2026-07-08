@@ -1,0 +1,41 @@
+using UnityEngine;
+using System.Collections.Generic;
+
+public class RhythmManager : MonoBehaviour
+{
+    [Header("Track Configuration")]
+    [SerializeField] private GameObject notePrefab;    // Your pixel art note sprite
+    [SerializeField] private Transform spawnPoint;     // Where notes appear off-screen
+    [SerializeField] private Transform targetLine;     // The perfect hit zone line
+
+    [Header("Beat Timings (In Seconds)")]
+    // You manually type when notes should spawn! (e.g., at 1.0s, 2.0s, 2.5s...)
+    [SerializeField] private List<float> spawnTimes = new List<float> { 1.0f, 2.0f, 2.5f, 4.0f, 5.0f };
+    
+    private float gameTimer = 0f;
+    private int nextNoteIndex = 0;
+
+    private void Update()
+    {
+        gameTimer += Time.deltaTime;
+
+        // Check if it's time to spawn the next note based on our list
+        if (nextNoteIndex < spawnTimes.Count && gameTimer >= spawnTimes[nextNoteIndex])
+        {
+            SpawnNote();
+            nextNoteIndex++;
+        }
+    }
+
+    private void SpawnNote()
+    {
+        GameObject newNote = Instantiate(notePrefab, spawnPoint.position, Quaternion.identity, spawnPoint.parent);
+        
+        // Give the note a simple script to make it slide towards the target line
+        MovingNote noteScript = newNote.GetComponent<MovingNote>();
+        if (noteScript != null)
+        {
+            noteScript.Setup(targetLine.position);
+        }
+    }
+}

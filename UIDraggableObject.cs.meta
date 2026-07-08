@@ -1,0 +1,49 @@
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+public class UIDraggableObject : MonoBehaviour, IPointerDownHandler, IDragHandler
+{
+    private RectTransform rectTransform;
+    private Canvas canvas;
+    
+    // Tracks what stamp the passport is currently touching
+    [HideInInspector] public string currentStampZone = ""; 
+
+    private void Awake()
+    {
+        rectTransform = GetComponent<RectTransform>();
+        canvas = GetComponentInParent<Canvas>();
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        rectTransform.SetAsLastSibling();
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (canvas != null)
+        {
+            rectTransform.anchoredPosition += eventData.delta / canvas.scaleFactor;
+        }
+    }
+
+    // Runs automatically when the document slides under a stamp box
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.name == "Stamp_Approve" || other.name == "Stamp_Deny")
+        {
+            currentStampZone = other.name;
+            Debug.Log("Document is now under: " + currentStampZone);
+        }
+    }
+
+    // Runs automatically when you pull the document away from a stamp
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        if (other.name == currentStampZone)
+        {
+            currentStampZone = "";
+        }
+    }
+}
